@@ -13,13 +13,13 @@
 
         <!-- Registration Form -->
         <form @submit.prevent="handleRegister" class="space-y-4">
-          <!-- Store Info -->
+          <!-- Affiliator Info -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Store Name</span>
+              <span class="label-text">Affiliator Name</span>
             </label>
             <input
-              v-model="form.store_name"
+              v-model="form.affiliator_name"
               type="text"
               class="input input-bordered"
               required
@@ -56,16 +56,73 @@
 
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Password</span>
+              <span class="label-text">Phone Number</span>
             </label>
             <input
-              v-model="form.password"
-              type="password"
+              v-model="form.phone_number"
+              type="tel"
               class="input input-bordered"
               required
-              minlength="6"
               :disabled="registering"
             />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Password</span>
+            </label>
+            <div class="relative">
+              <input
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                class="input input-bordered w-full"
+                required
+                minlength="6"
+                :disabled="registering"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                @click="toggleShowPassword"
+              >
+                <svg
+                  v-if="showPassword"
+                  class="h-5 w-5"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-.274.823-.676 1.597-1.186 2.285M15 12a3 3 0 01-6 0 3 3 0 016 0zm-3 3c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  class="h-5 w-5"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7 .274-.823.676-1.597 1.186-2.285M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3 3c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"
+                  />
+                </svg>
+              </button>
+            </div>
             <label class="label">
               <span class="label-text-alt">At least 6 characters</span>
             </label>
@@ -75,13 +132,57 @@
             <label class="label">
               <span class="label-text">Confirm Password</span>
             </label>
-            <input
-              v-model="form.confirm_password"
-              type="password"
-              class="input input-bordered"
-              required
-              :disabled="registering"
-            />
+            <div class="relative">
+              <input
+                v-model="form.confirm_password"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                class="input input-bordered w-full"
+                required
+                :disabled="registering"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                @click="toggleShowConfirmPassword"
+              >
+                <svg
+                  v-if="showConfirmPassword"
+                  class="h-5 w-5"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-.274.823-.676 1.597-1.186 2.285M15 12a3 3 0 01-6 0 3 3 0 016 0zm-3 3c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  class="h-5 w-5"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7 .274-.823.676-1.597 1.186-2.285M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3 3c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Submit Button -->
@@ -120,22 +221,39 @@ const toast = useToast();
 
 // Form state
 const form = ref({
-  store_name: "",
+  affiliator_name: "",
   full_name: "",
   email: "",
   password: "",
   confirm_password: "",
+  phone_number: "",
 });
 
 const registering = ref(false);
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
-// Generate a URL-friendly slug from store name
+// Generate a URL-friendly slug from affiliator name
 function generateSlug(name) {
   return name
     .toLowerCase()
     .replace(/[^\w\s-]/g, "") // Remove special characters
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
+}
+
+// Validate password strength
+function isValidPassword(password) {
+  return password.length >= 6;
+}
+
+// Toggle show/hide password
+function toggleShowPassword() {
+  showPassword.value = !showPassword.value;
+}
+
+function toggleShowConfirmPassword() {
+  showConfirmPassword.value = !showConfirmPassword.value;
 }
 
 // Handle registration
@@ -147,6 +265,12 @@ async function handleRegister() {
       return;
     }
 
+    // Validate password strength
+    if (!isValidPassword(form.value.password)) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
     registering.value = true;
 
     // Step 1: Create user account with auto-confirm for development
@@ -154,10 +278,6 @@ async function handleRegister() {
       email: form.value.email,
       password: form.value.password,
       options: {
-        data: {
-          full_name: form.value.full_name,
-          type: "affiliator",
-        },
         emailRedirectTo: `${window.location.origin}/login`,
         // For development, don't require email verification
         emailConfirm: false,
@@ -177,33 +297,21 @@ async function handleRegister() {
       throw new Error("Failed to create account");
     }
 
-    // Step 2: Create store
-    const storeData = {
-      affiliator_id: authData.user.id,
-      name: form.value.store_name,
-      slug: generateSlug(form.value.store_name),
-      theme: {
-        primary_color: "#6419E6",
-        secondary_color: "#D926AA",
-        accent_color: "#1FB2A5",
-        neutral_color: "#191D24",
-        font_family: "Inter, sans-serif",
-      },
-      social_media: {
-        facebook: "",
-        instagram: "",
-        twitter: "",
-        tiktok: "",
-      },
+    // Step 2: Create affiliator
+    const affiliatorData = {
+      id: authData.user.id,
+      name: form.value.affiliator_name,
+      email: form.value.email,
+      phone_number: form.value.phone_number,
     };
 
-    const { error: storeError } = await supabase
-      .from("stores")
-      .insert([storeData]);
+    const { error: affiliatorError } = await supabase
+      .from("affiliators")
+      .insert([affiliatorData]);
 
-    if (storeError) {
-      console.error("Store creation error:", storeError);
-      throw storeError;
+    if (affiliatorError) {
+      console.error("Affiliator creation error:", affiliatorError);
+      throw affiliatorError;
     }
 
     // Step 3: Sign in the user
@@ -221,6 +329,13 @@ async function handleRegister() {
     router.push("/");
   } catch (error) {
     console.error("Registration error:", error);
+
+    // Rollback actions
+    if (authData && authData.user) {
+      await supabase.auth.api.deleteUser(authData.user.id);
+      await supabase.from("affiliators").delete().eq("id", authData.user.id);
+    }
+
     toast.error("Failed to create account. Please try again.");
   } finally {
     registering.value = false;
