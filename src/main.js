@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import './style.css'
 import { supabase } from './lib/supabaseClient'
+import { Icon } from '@iconify/vue'
 
 // Router configuration
 const router = createRouter({
@@ -51,9 +52,20 @@ const router = createRouter({
       component: () => import('./views/Customers.vue')
     },
     {
+      path: '/explore',
+      name: 'Explore',
+      component: () => import('./views/Explore.vue')
+    },
+    {
       path: '/settings',
       name: 'Settings',
       component: () => import('./views/Settings.vue')
+    },
+    // Catch all route for 404
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('./views/NotFound.vue')
     }
   ]
 })
@@ -86,6 +98,9 @@ router.beforeEach(async (to) => {
 
 // Create app
 const app = createApp(App)
+
+// Register Iconify globally
+app.component('Icon', Icon);
 
 // Use router
 app.use(router)

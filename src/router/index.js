@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { supabase } from '../lib/supabaseClient'
 import ProductForm from '../views/ProductForm.vue'
+import Home from '../views/Home.vue'
 
 // Auth guard
 async function requireAuth(to, from, next) {
@@ -42,6 +43,11 @@ const publicRoutes = ['Login', 'Register']
 
 // Routes
 const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: Home,
+  },
   {
     path: '/login',
     name: 'Login',
@@ -112,6 +118,12 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/Settings.vue'),
+    beforeEnter: requireAuth
+  },
+  {
+    path: '/explore',
+    name: 'Explore',
+    component: () => import('../views/Explore.vue'),
     beforeEnter: requireAuth
   },
   // Catch all route for 404
