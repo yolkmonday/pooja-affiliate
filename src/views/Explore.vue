@@ -9,381 +9,118 @@
       </div>
     </div>
 
-    <!-- Filters and Search -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-      <div class="flex-1">
-        <div class="join w-full max-w-md">
-          <input
-            v-model="searchQuery"
-            class="input input-bordered join-item flex-1"
-            placeholder="Search by order number or customer..."
-          />
-          <button class="btn join-item">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+    <!-- Search Input -->
+    <div class="mb-4">
+      <input
+        v-model="searchQuery"
+        @input="searchProducts"
+        type="text"
+        placeholder="Search products..."
+        class="input input-bordered w-full"
+      />
+    </div>
+
+    <!-- Products List -->
+    <div class="card bg-base-100 shadow-xl mt-8">
+      <div class="card-body">
+        <div v-if="loading" class="flex justify-center items-center h-32">
+          <span class="loading loading-spinner loading-lg"></span>
+        </div>
+        <div v-if="!loading" class="space-y-4">
+          <div
+            v-for="product in paginatedProducts"
+            :key="product.id"
+            class="flex items-center w-full justify-between space-x-4"
+          >
+            <div class="flex items-center gap-2">
+              <img
+                alt="Product Image"
+                :src="product?.images[0]"
+                onerror="this.src = 'https://via.placeholder.com/24'"
+                class="w-24 h-24 object-cover rounded-lg"
+              />
+              <div>
+                <h3>{{ product.name }}</h3>
+                <p class="font-semibold">
+                  Rp {{ formatNumber(product.sale_price) }}
+                </p>
+              </div>
+            </div>
+            <div>
+              <button
+                @click="addToMyProduct(product.id)"
+                class="btn btn-primary"
+              >
+                Add to My Product
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-4">
+          <button
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            class="btn btn-secondary"
+          >
+            Previous
+          </button>
+          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            class="btn btn-secondary"
+          >
+            Next
           </button>
         </div>
       </div>
-      <div class="flex gap-2">
-        <select
-          v-model="statusFilter"
-          class="select select-bordered w-full max-w-xs"
-        >
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="processing">Processing</option>
-          <option value="shipped">Shipped</option>
-          <option value="delivered">Delivered</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <select
-          v-model="dateFilter"
-          class="select select-bordered w-full max-w-xs"
-        >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-        </select>
-      </div>
     </div>
-
-    <!-- Orders Table -->
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <div class="overflow-x-auto">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Order Details</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="order in filteredOrders" :key="order.id" class="hover">
-                <td>
-                  <div>
-                    <div class="font-bold">#{{ order.order_number }}</div>
-                    <div class="text-sm opacity-50">
-                      {{ formatDate(order.created_at) }}
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div>
-                    <div class="font-bold">{{ order.customer.name }}</div>
-                    <div class="text-sm opacity-50">
-                      {{ order.customer.phone }}
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div>
-                    <div class="font-bold">
-                      Rp {{ formatNumber(order.total_amount) }}
-                    </div>
-                    <div class="text-sm opacity-50">
-                      {{ order.order_items.length }} items
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="badge" :class="getStatusBadgeClass(order.status)">
-                    {{ order.status }}
-                  </div>
-                </td>
-                <td>
-                  <div
-                    class="badge"
-                    :class="getPaymentBadgeClass(order.payment_status)"
-                  >
-                    {{ order.payment_status }}
-                  </div>
-                </td>
-                <td>
-                  <button
-                    @click="viewOrder(order)"
-                    class="btn btn-sm btn-ghost"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                      ></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="flex justify-between items-center mt-4">
-          <div class="text-sm text-gray-600">
-            Showing {{ startIndex + 1 }} to {{ endIndex }} of
-            {{ totalOrders }} orders
-          </div>
-          <div class="join">
-            <button
-              class="join-item btn"
-              :disabled="currentPage === 1"
-              @click="currentPage--"
-            >
-              «
-            </button>
-            <button class="join-item btn">Page {{ currentPage }}</button>
-            <button
-              class="join-item btn"
-              :disabled="endIndex >= totalOrders"
-              @click="currentPage++"
-            >
-              »
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Order Details Modal -->
-    <dialog id="order_modal" class="modal">
-      <div class="modal-box max-w-3xl">
-        <h3 class="font-bold text-lg mb-4">
-          Order #{{ selectedOrder?.order_number }}
-        </h3>
-
-        <div v-if="selectedOrder" class="space-y-6">
-          <!-- Order Status -->
-          <div class="flex justify-between items-center">
-            <div
-              class="badge badge-lg"
-              :class="getStatusBadgeClass(selectedOrder.status)"
-            >
-              {{ selectedOrder.status }}
-            </div>
-            <select
-              v-model="selectedOrder.status"
-              class="select select-bordered"
-              @change="updateOrderStatus(selectedOrder)"
-            >
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          <!-- Customer Details -->
-          <div class="bg-base-200 p-4 rounded-lg">
-            <h4 class="font-semibold mb-2">Customer Details</h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-sm opacity-50">Name</div>
-                <div>{{ selectedOrder.customer.name }}</div>
-              </div>
-              <div>
-                <div class="text-sm opacity-50">Phone</div>
-                <div>{{ selectedOrder.customer.phone }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shipping Details -->
-          <div class="bg-base-200 p-4 rounded-lg">
-            <h4 class="font-semibold mb-2">Shipping Details</h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-sm opacity-50">Address</div>
-                <div>{{ selectedOrder.shipping_address.address }}</div>
-              </div>
-              <div>
-                <div class="text-sm opacity-50">Courier</div>
-                <div>
-                  {{ selectedOrder.shipping_courier }} -
-                  {{ selectedOrder.shipping_service }}
-                </div>
-              </div>
-              <div v-if="selectedOrder.tracking_number">
-                <div class="text-sm opacity-50">Tracking Number</div>
-                <div>{{ selectedOrder.tracking_number }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Order Items -->
-          <div>
-            <h4 class="font-semibold mb-2">Order Items</h4>
-            <div class="overflow-x-auto">
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in selectedOrder.order_items" :key="item.id">
-                    <td>
-                      <div class="flex items-center gap-2">
-                        <div class="avatar">
-                          <div class="w-8 h-8">
-                            <img
-                              :src="item.product.images[0]"
-                              :alt="item.product.name"
-                              class="rounded"
-                            />
-                          </div>
-                        </div>
-                        <div>{{ item.product.name }}</div>
-                      </div>
-                    </td>
-                    <td>{{ item.quantity }}</td>
-                    <td>Rp {{ formatNumber(item.unit_price) }}</td>
-                    <td>Rp {{ formatNumber(item.subtotal) }}</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="3" class="text-right font-semibold">
-                      Subtotal
-                    </td>
-                    <td>Rp {{ formatNumber(selectedOrder.subtotal) }}</td>
-                  </tr>
-                  <tr>
-                    <td colspan="3" class="text-right font-semibold">
-                      Shipping Fee
-                    </td>
-                    <td>Rp {{ formatNumber(selectedOrder.shipping_fee) }}</td>
-                  </tr>
-                  <tr>
-                    <td colspan="3" class="text-right font-semibold">
-                      Platform Fee (3%)
-                    </td>
-                    <td>
-                      Rp
-                      {{
-                        formatNumber(selectedOrder.platform_commission_amount)
-                      }}
-                    </td>
-                  </tr>
-                  <tr v-if="selectedOrder.affiliate_commission_amount">
-                    <td colspan="3" class="text-right font-semibold">
-                      Affiliate Commission
-                    </td>
-                    <td>
-                      Rp
-                      {{
-                        formatNumber(selectedOrder.affiliate_commission_amount)
-                      }}
-                    </td>
-                  </tr>
-                  <tr class="text-lg">
-                    <td colspan="3" class="text-right font-bold">Total</td>
-                    <td class="font-bold">
-                      Rp {{ formatNumber(selectedOrder.total_amount) }}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-action">
-          <button class="btn" @click="closeOrderModal">Close</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { supabase } from "../lib/supabaseClient";
+import { useToast } from "../composables/useToast";
+
+const toast = useToast();
 
 // State
 const orders = ref([]);
 const selectedOrder = ref(null);
-const searchQuery = ref("");
+const searchQuery = ref(""); // Added search query state
 const statusFilter = ref("");
 const dateFilter = ref("all");
-const currentPage = ref(1);
-const itemsPerPage = 10;
+const currentPage = ref(1); // Added current page state
+const itemsPerPage = 10; // Number of items per page
 const totalOrders = ref(0);
 const storeId = ref(null);
+const products = ref([]); // Added state for products
+const loading = ref(true); // Added loading state
+const affiliatorId = ref(null); // Affiliator ID
 
 // Computed
 const filteredOrders = computed(() => {
-  let filtered = [...orders.value];
+  // ...existing code...
+});
 
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(
-      (order) =>
-        order.order_number.toLowerCase().includes(query) ||
-        order.customer.name.toLowerCase().includes(query)
-    );
-  }
+const filteredProducts = computed(() => {
+  if (!searchQuery.value) return products.value;
+  return products.value.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 
-  if (statusFilter.value) {
-    filtered = filtered.filter((order) => order.status === statusFilter.value);
-  }
+const totalPages = computed(() => {
+  return Math.ceil(filteredProducts.value.length / itemsPerPage);
+});
 
-  if (dateFilter.value !== "all") {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const orderDate = new Date(order.created_at);
-
-    switch (dateFilter.value) {
-      case "today":
-        filtered = filtered.filter(
-          (order) => new Date(order.created_at) >= today
-        );
-        break;
-      case "week":
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        filtered = filtered.filter(
-          (order) => new Date(order.created_at) >= weekAgo
-        );
-        break;
-      case "month":
-        const monthAgo = new Date(today);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        filtered = filtered.filter(
-          (order) => new Date(order.created_at) >= monthAgo
-        );
-        break;
-    }
-  }
-
-  return filtered;
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredProducts.value.slice(start, end);
 });
 
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
@@ -407,27 +144,11 @@ function formatDate(date) {
 }
 
 function getStatusBadgeClass(status) {
-  const classes = {
-    pending: "badge-warning",
-    confirmed: "badge-info",
-    processing: "badge-primary",
-    shipped: "badge-secondary",
-    delivered: "badge-success",
-    cancelled: "badge-error",
-  };
-  return classes[status] || "badge-ghost";
+  // ...existing code...
 }
 
 function getPaymentBadgeClass(status) {
-  const classes = {
-    pending: "badge-warning",
-    settlement: "badge-success",
-    deny: "badge-error",
-    cancel: "badge-error",
-    expire: "badge-error",
-    refund: "badge-info",
-  };
-  return classes[status] || "badge-ghost";
+  // ...existing code...
 }
 
 function viewOrder(order) {
@@ -440,73 +161,105 @@ function closeOrderModal() {
   selectedOrder.value = null;
 }
 
-async function updateOrderStatus(order) {
+async function fetchProducts() {
+  loading.value = true;
   try {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: order.status })
-      .eq("id", order.id);
+    const { data, error } = await supabase.from("products").select(`
+        *,
+        store:stores (name)
+      `);
 
     if (error) throw error;
 
-    // Refresh orders list
-    await fetchOrders();
+    products.value = data;
   } catch (error) {
-    console.error("Error updating order status:", error);
-    alert("Failed to update order status");
+    console.error("Error fetching products:", error);
+  } finally {
+    loading.value = false;
   }
 }
 
-async function fetchOrders() {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+function viewProduct(product) {
+  // Implement view product logic
+  console.log("Viewing product:", product);
+}
 
-    const { data: store, error: storeError } = await supabase
-      .from("stores")
+async function addToMyProduct(productId) {
+  try {
+    // Check if the product is already added
+    const { data: existingProduct, error: checkError } = await supabase
+      .from("affiliator_product")
       .select("id")
-      .eq("seller_id", user.id)
+      .eq("affiliator_id", affiliatorId.value)
+      .eq("product_id", productId)
       .single();
 
-    if (storeError) throw storeError;
+    if (checkError && checkError.code !== "PGRST116") {
+      throw checkError;
+    }
 
-    storeId.value = store.id;
+    if (existingProduct) {
+      toast.error("Product has already been added to your products");
+      return;
+    }
 
+    // Add the product if not already added
     const { data, error } = await supabase
-      .from("orders")
-      .select(
-        `
-        *,
-        customer:customers (
-          name,
-          phone
-        ),
-        order_items (
-          id,
-          quantity,
-          unit_price,
-          subtotal,
-          product:products (
-            name,
-            images
-          )
-        )
-      `
-      )
-      .eq("store_id", store.id)
-      .order("created_at", { ascending: false });
+      .from("affiliator_product")
+      .insert([{ affiliator_id: affiliatorId.value, product_id: productId }]);
 
     if (error) throw error;
 
-    orders.value = data;
-    totalOrders.value = data.length;
+    toast.success("Product added to your products");
+    console.log("Product added to my products:", data);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error adding product to my products:", error);
+    toast.error("Failed to add product to your products");
   }
 }
 
-onMounted(() => {
-  fetchOrders();
+function isValidImage(url) {
+  const validExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+  const extension = url.split(".").pop().toLowerCase();
+  return validExtensions.includes(extension);
+}
+
+async function searchProducts() {
+  loading.value = true;
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .ilike("name", `%${searchQuery.value}%`);
+
+    if (error) throw error;
+
+    products.value = data;
+  } catch (error) {
+    console.error("Error searching products:", error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+}
+
+function prevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+}
+
+onMounted(async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  affiliatorId.value = user.id;
+  fetchProducts();
 });
 </script>
+
