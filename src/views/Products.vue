@@ -17,83 +17,27 @@
       </div>
     </div>
     <!-- Products List -->
-    <div class="card bg-base-100 shadow-xl mt-8">
-      <div class="card-body">
-        <div v-if="loading" class="flex justify-center items-center h-32">
-          <span class="loading loading-spinner loading-lg"></span>
-        </div>
-        <div
-          v-if="!loading && paginatedProducts.length === 0"
-          class="text-center"
-        >
-          <p class="text-gray-600">No products found.</p>
-        </div>
-        <div v-if="!loading && paginatedProducts.length > 0" class="space-y-4">
-          <div
-            v-for="product in paginatedProducts"
-            :key="product.id"
-            class="flex items-center w-full justify-between space-x-4"
-          >
-            <div class="flex items-center gap-2">
-              <img
-                alt="Product Image"
-                :src="product?.images[0]"
-                onerror="this.src = 'https://via.placeholder.com/24'"
-                class="w-24 h-24 object-cover rounded-lg"
-              />
-              <div>
-                <h3>{{ product.name }}</h3>
-                <p class="font-semibold">
-                  Rp {{ formatNumber(product.sale_price) }}
-                </p>
-              </div>
-            </div>
-            <div>
-              <button
-                @click="openDeleteModal(product)"
-                class="btn btn-danger ml-2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pagination Controls -->
-        <div class="flex justify-between items-center mt-4">
-          <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            class="btn btn-secondary"
-          >
-            Previous
-          </button>
-          <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages"
-            class="btn btn-secondary"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
+    <ProductList
+      :products="paginatedProducts"
+      :loading="loading"
+      @openDeleteModal="openDeleteModal"
+    />
+    <!-- Pagination Controls -->
+    <PaginationControls
+      :currentPage="currentPage"
+      :totalPages="totalPages"
+      @prevPage="prevPage"
+      @nextPage="nextPage"
+    />
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div v-if="productToDelete" class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Confirm Delete</h3>
-      <p class="py-4">
-        Are you sure you want to delete {{ productToDelete.name }}?
-      </p>
-      <div class="modal-action">
-        <button @click="confirmDelete" class="btn btn-danger">Delete</button>
-        <button @click="closeDeleteModal" class="btn">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <DeleteConfirmationModal
+    v-if="productToDelete"
+    :product="productToDelete"
+    @confirmDelete="confirmDelete"
+    @closeDeleteModal="closeDeleteModal"
+  />
 </template>
 
 <script setup>
@@ -101,6 +45,9 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { supabase, STORAGE_BUCKETS } from "../lib/supabaseClient";
 import { useToast } from "../composables/useToast";
+import PaginationControls from "@/components/PaginationControls.vue";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal.vue";
+import ProductList from "@/components/ProductList.vue";
 
 const router = useRouter();
 const toast = useToast();
@@ -114,9 +61,6 @@ const searchQuery = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 10;
 const loading = ref(true); // Added loading state
-
-// Component refs
-const deleteModal = ref(null);
 
 // Computed property for filtered products
 const filteredProducts = computed(() => {
@@ -253,11 +197,6 @@ async function fetchProducts() {
   } finally {
     loading.value = false;
   }
-}
-
-// Number formatting function
-function formatNumber(number) {
-  return new Intl.NumberFormat("id-ID").format(number);
 }
 
 // Initialize
