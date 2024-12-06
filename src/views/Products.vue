@@ -35,6 +35,7 @@
   <DeleteConfirmationModal
     v-if="productToDelete"
     :product="productToDelete"
+    :deleting="deleting"
     @confirmDelete="confirmDelete"
     @closeDeleteModal="closeDeleteModal"
   />
