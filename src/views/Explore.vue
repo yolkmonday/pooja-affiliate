@@ -46,12 +46,17 @@
                 </p>
               </div>
             </div>
-            <div>
+            <div v-if="!addedProductIds.has(product.id)">
               <button
                 @click="addToMyProduct(product.id)"
+                :disabled="addingProductId === product.id || loading"
                 class="btn btn-primary"
               >
-                Add to My Product
+                <span
+                  v-if="addingProductId === product.id"
+                  class="loading loading-spinner loading-sm"
+                ></span>
+                <span v-else>Add to My Product</span>
               </button>
             </div>
           </div>
@@ -100,6 +105,9 @@ const storeId = ref(null);
 const products = ref([]); // Added state for products
 const loading = ref(true); // Added loading state
 const affiliatorId = ref(null); // Affiliator ID
+const addingProduct = ref(false); // Added state for adding product
+const addingProductId = ref(null); // Added state for specific product being added
+const addedProductIds = ref(new Set()); // Added state for added product IDs
 
 // Computed
 const filteredOrders = computed(() => {
@@ -172,6 +180,16 @@ async function fetchProducts() {
     if (error) throw error;
 
     products.value = data;
+
+    // Fetch added products
+    const { data: addedProducts, error: addedProductsError } = await supabase
+      .from("affiliator_product")
+      .select("product_id")
+      .eq("affiliator_id", affiliatorId.value);
+
+    if (addedProductsError) throw addedProductsError;
+
+    addedProductIds.value = new Set(addedProducts.map((p) => p.product_id));
   } catch (error) {
     console.error("Error fetching products:", error);
   } finally {
@@ -185,6 +203,8 @@ function viewProduct(product) {
 }
 
 async function addToMyProduct(productId) {
+  if (addingProductId.value) return; // Prevent multiple clicks
+  addingProductId.value = productId; // Set loading state for specific product
   try {
     // Check if the product is already added
     const { data: existingProduct, error: checkError } = await supabase
@@ -212,9 +232,14 @@ async function addToMyProduct(productId) {
 
     toast.success("Product added to your products");
     console.log("Product added to my products:", data);
+
+    // Reload products and check affiliator_product
+    await fetchProducts();
   } catch (error) {
     console.error("Error adding product to my products:", error);
     toast.error("Failed to add product to your products");
+  } finally {
+    addingProductId.value = null; // Reset loading state
   }
 }
 

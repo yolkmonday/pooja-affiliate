@@ -27,19 +27,9 @@ const router = createRouter({
       component: () => import('./views/Dashboard.vue')
     },
     {
-      path: '/products',
-      name: 'Products',
+      path: '/my-products',
+      name: 'MyProducts',
       component: () => import('./views/Products.vue')
-    },
-    {
-      path: '/products/new',
-      name: 'NewProduct',
-      component: () => import('./views/ProductForm.vue')
-    },
-    {
-      path: '/products/:id/edit',
-      name: 'EditProduct',
-      component: () => import('./views/ProductForm.vue')
     },
     {
       path: '/orders',
@@ -61,7 +51,6 @@ const router = createRouter({
       name: 'Settings',
       component: () => import('./views/Settings.vue')
     },
-    // Catch all route for 404
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
