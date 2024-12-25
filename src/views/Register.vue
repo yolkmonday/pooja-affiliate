@@ -14,7 +14,7 @@
         <!-- Registration Form -->
         <form @submit.prevent="handleRegister" class="space-y-4">
           <!-- Affiliator Info -->
-          <div class="form-control">
+          <!-- <div class="form-control">
             <label class="label">
               <span class="label-text">Affiliator Name</span>
             </label>
@@ -25,7 +25,7 @@
               required
               :disabled="registering"
             />
-          </div>
+          </div> -->
 
           <!-- Personal Info -->
           <div class="form-control">
