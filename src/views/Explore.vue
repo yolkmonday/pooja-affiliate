@@ -33,12 +33,12 @@
             class="flex items-center w-full justify-between space-x-4"
           >
             <div class="flex items-center gap-2">
-              <img
+              <!-- <img
                 alt="Product Image"
                 :src="product?.images[0]"
                 onerror="this.src = 'https://via.placeholder.com/24'"
                 class="w-24 h-24 object-cover rounded-lg"
-              />
+              /> -->
               <div>
                 <h3>{{ product.name }}</h3>
                 <p class="font-semibold">
