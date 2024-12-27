@@ -26,37 +26,44 @@
         <div v-if="loading" class="flex justify-center items-center h-32">
           <span class="loading loading-spinner loading-lg"></span>
         </div>
-        <div v-if="!loading" class="space-y-4">
+        <div v-if="!loading" class="grid md:grid-cols-4 grid-cols-2 gap-4">
           <div
             v-for="product in paginatedProducts"
             :key="product.id"
-            class="flex items-center w-full justify-between space-x-4"
+            class="relative"
           >
-            <div class="flex items-center gap-2">
-              <!-- <img
-                alt="Product Image"
-                :src="product?.images[0]"
-                onerror="this.src = 'https://via.placeholder.com/24'"
-                class="w-24 h-24 object-cover rounded-lg"
-              /> -->
-              <div>
-                <h3>{{ product.name }}</h3>
-                <p class="font-semibold">
-                  Rp {{ formatNumber(product.sale_price) }}
-                </p>
+            <img
+              :src="product.images !== null ? product.images[0] : '/images.png'"
+              alt=""
+              class="rounded-lg"
+            />
+            <div>
+              <div class="text-sm text-gray-600">
+                Rp{{ formatNumber(product.sale_price) }}
+                <span class="line-through text-gray-400">
+                  Rp{{ formatNumber(product.base_price) }}
+                </span>
               </div>
             </div>
-            <div v-if="!addedProductIds.has(product.id)">
+
+            <div class="font-semibold text-sm">
+              {{ product.name }}
+            </div>
+
+            <div
+              v-if="!addedProductIds.has(product.id)"
+              class="absolute top-0 right-0 p-2"
+            >
               <button
                 @click="addToMyProduct(product.id)"
                 :disabled="addingProductId === product.id || loading"
-                class="btn btn-primary"
+                class="py-2 px-4 text-xs bg-blue-700 rounded-xl text-white"
               >
                 <span
                   v-if="addingProductId === product.id"
                   class="loading loading-spinner loading-sm"
                 ></span>
-                <span v-else>Add to My Product</span>
+                <span v-else>+ List</span>
               </button>
             </div>
           </div>
